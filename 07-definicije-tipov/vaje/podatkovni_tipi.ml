@@ -41,7 +41,7 @@ let dollar_to_euro (Dollar x) = Euro (x *. 0.93)
  - : currency = Pound 0.007
 [*----------------------------------------------------------------------------*)
 
-type currency = Jen of float | Funt of float | Krona of float | Frank of x
+type currency = Jen of float | Funt of float | Krona of float | Frank of float
 
 let to_pound = function
   | Jen x -> x *. 0.0063
