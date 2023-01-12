@@ -21,7 +21,13 @@
  - : euro = Euro 0.4305
 [*----------------------------------------------------------------------------*)
 
+type dollar = Dollar of float
 
+type euro = Euro of float
+
+let euro_to_dollar (Euro x) = Dollar (1.08 *. x)
+
+let dollar_to_euro (Dollar x) = Euro (x *. 0.93)
 
 (*----------------------------------------------------------------------------*]
  Definirajte tip [currency] kot en vsotni tip z konstruktorji za jen, funt
@@ -35,7 +41,13 @@
  - : currency = Pound 0.007
 [*----------------------------------------------------------------------------*)
 
+type currency = Jen of float | Funt of float | Krona of float | Frank of x
 
+let to_pound = function
+  | Jen x -> x *. 0.0063
+  | Krona x -> x *. 0.079
+  | Funt x -> x
+  | Frank x -> x *. 0.89
 
 (*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*]
  Želimo uporabljati sezname, ki hranijo tako cela števila kot tudi logične
@@ -57,7 +69,12 @@
  Nato napišite testni primer, ki bi predstavljal "[5; true; false; 7]".
 [*----------------------------------------------------------------------------*)
 
+type intbool_list =
+  | Nil
+  | Int of int * intbool_list
+  | Bool of bool * intbool_list
 
+let testni = Int (5, Bool (true, Bool (false, Int (7, Nil))))
 
 (*----------------------------------------------------------------------------*]
  Funkcija [intbool_map f_int f_bool ib_list] preslika vrednosti [ib_list] v nov
@@ -65,14 +82,23 @@
  oz. [f_bool].
 [*----------------------------------------------------------------------------*)
 
-let rec intbool_map = ()
+let rec intbool_map f_int f_bool = function
+  | Nil -> Nil
+  | Bool (x, rep) -> Bool (f_bool x, intbool_map f_int f_bool rep)
+  | Int (x, rep) -> Int (f_int x, intbool_map f_int f_bool rep)
 
 (*----------------------------------------------------------------------------*]
  Funkcija [intbool_reverse] obrne vrstni red elementov [intbool_list] seznama.
  Funkcija je repno rekurzivna.
 [*----------------------------------------------------------------------------*)
 
-let rec intbool_reverse = ()
+let rec intbool_reverse list =
+  let rec aux acc = function
+    | Nil -> acc
+    | Bool (x, xs) -> aux (Bool (x, acc)) xs
+    | Int (x, xs) -> aux (Int (x, acc)) xs
+  in
+  aux Nil list
 
 (*----------------------------------------------------------------------------*]
  Funkcija [intbool_separate ib_list] loči vrednosti [ib_list] v par [list]
@@ -80,7 +106,13 @@ let rec intbool_reverse = ()
  vrednosti. Funkcija je repno rekurzivna in ohranja vrstni red elementov.
 [*----------------------------------------------------------------------------*)
 
-let rec intbool_separate = ()
+let rec intbool_separate list =
+  let rec aux acc1 acc2 = function
+    | Nil -> (intbool_reverse acc1, intbool_reverse acc2)
+    | Bool (x, xs) -> aux (Bool (x, acc1)) acc2 xs
+    | Int (x, xs) -> aux acc1 (Int (x, acc2)) xs
+  in
+  aux Nil Nil (intbool_reverse list)
 
 (*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*]
  Določeni ste bili za vzdrževalca baze podatkov za svetovno priznano čarodejsko
@@ -97,8 +129,9 @@ let rec intbool_separate = ()
  raziskovanje oz. historian, teacher in researcher. Definirajte tip
  [specialisation], ki loči med temi zaposlitvami.
 [*----------------------------------------------------------------------------*)
+type magic = Fire | Frost | Arcane
 
-
+type specialisation = Historian | Teacher | Researcher
 
 (*----------------------------------------------------------------------------*]
  Vsak od čarodejev začne kot začetnik, nato na neki točki postane študent,
@@ -114,8 +147,12 @@ let rec intbool_separate = ()
  # professor;;
  - : wizard = {name = "Matija"; status = Employed (Fire, Teacher)}
 [*----------------------------------------------------------------------------*)
+type status =
+  | Newbie
+  | Student of magic * int
+  | Employed of magic * specialisation
 
-
+type wizard = { name : string; status : status }
 
 (*----------------------------------------------------------------------------*]
  Želimo prešteti koliko uporabnikov posamezne od vrst magije imamo na akademiji.
@@ -127,8 +164,12 @@ let rec intbool_separate = ()
  # update {fire = 1; frost = 1; arcane = 1} Arcane;;
  - : magic_counter = {fire = 1; frost = 1; arcane = 2}
 [*----------------------------------------------------------------------------*)
+type magic_counter = { fire : int; frost : int; arcane : int }
 
-
+let update counter = function
+  | Fire -> { counter with fire = counter.fire + 1 }
+  | Arcane -> { counter with arcane = counter.arcane + 1 }
+  | Frost -> { counter with frost = counter.frost + 1 }
 
 (*----------------------------------------------------------------------------*]
  Funkcija [count_magic] sprejme seznam čarodejev in vrne števec uporabnikov
@@ -138,7 +179,16 @@ let rec intbool_separate = ()
  - : magic_counter = {fire = 3; frost = 0; arcane = 0}
 [*----------------------------------------------------------------------------*)
 
-let rec count_magic = ()
+let rec count_magic list =
+  let rec aux_counter acc = function
+    | [] -> acc
+    | { name; status } :: ostali -> (
+        match status with
+        | Newbie -> aux_counter acc ostali
+        | Student (magic, _) -> aux_counter (update acc magic) ostali
+        | Employed (magic, _) -> aux_counter (update acc magic) ostali )
+  in
+  aux_counter { fire = 0; frost = 0; arcane = 0 } list
 
 (*----------------------------------------------------------------------------*]
  Želimo poiskati primernega kandidata za delovni razpis. Študent lahko postane
@@ -154,4 +204,15 @@ let rec count_magic = ()
  - : string option = Some "Jaina"
 [*----------------------------------------------------------------------------*)
 
-let rec find_candidate = ()
+let rec find_candidate magic specialisation wizard_list =
+  let year =
+    match specialisation with Historian -> 3 | Researcher -> 4 | Teacher -> 5
+  in
+  let rec search = function
+    | [] -> None
+    | { name; status } :: ostali -> (
+        match status with
+        | Student (m, i) when magic = magic && i >= year -> Some name
+        | _ -> search ostali )
+  in
+  search wizard_list
