@@ -1,4 +1,3 @@
-
 (* ========== Vaja 1: Uvod v OCaml  ========== *)
 
 (*----------------------------------------------------------------------------*]
@@ -8,7 +7,7 @@
  - : int = 4
 [*----------------------------------------------------------------------------*)
 
-let square = ()
+let square n = n * n
 
 (*----------------------------------------------------------------------------*]
  Funkcija [middle_of_triple] vrne srednji element trojice.
@@ -17,7 +16,7 @@ let square = ()
  - : bool = false
 [*----------------------------------------------------------------------------*)
 
-let middle_of_triple = ()
+let middle_of_triple (a, b, c) = b
 
 (*----------------------------------------------------------------------------*]
  Funkcija [starting_element] vrne prvi element danega seznama. V primeru
@@ -27,7 +26,9 @@ let middle_of_triple = ()
  - : int = 1
 [*----------------------------------------------------------------------------*)
 
-let starting_element = ()
+let starting_element = function
+  | [] -> failwith "Prekratek seznam!"
+  | g :: r -> g
 
 (*----------------------------------------------------------------------------*]
  Funkcija [multiply] zmnoži vse elemente seznama. V primeru praznega seznama
@@ -37,7 +38,8 @@ let starting_element = ()
  - : int = 48
 [*----------------------------------------------------------------------------*)
 
-let rec multiply = ()
+let rec multiply sez =
+  match sez with [] -> 1 | glava :: rep -> glava * multiply rep
 
 (*----------------------------------------------------------------------------*]
  Napišite funkcijo ekvivalentno python kodi:
@@ -54,7 +56,10 @@ let rec multiply = ()
  - : int list = [-1; 7; 0]
 [*----------------------------------------------------------------------------*)
 
-let rec sum_int_pairs = ()
+let rec sum_int_pairs seznam_parov =
+  match seznam_parov with
+  | [] -> []
+  | (a, b) :: rep -> (a + b) :: sum_int_pairs rep
 
 (*----------------------------------------------------------------------------*]
  Funkcija [get k list] poišče [k]-ti element v seznamu [list]. Številčenje
@@ -65,7 +70,10 @@ let rec sum_int_pairs = ()
  - : int = 1
 [*----------------------------------------------------------------------------*)
 
-let rec get = ()
+let rec get k list =
+  match list with
+  | [] -> failwith "Prekratek seznam!"
+  | glava :: rep -> if k <= 0 then glava else get (k - 1) rep
 
 (*----------------------------------------------------------------------------*]
  Funkcija [double] podvoji pojavitve elementov v seznamu.
@@ -74,7 +82,7 @@ let rec get = ()
  - : int list = [1; 1; 2; 2; 3; 3]
 [*----------------------------------------------------------------------------*)
 
-let rec double = ()
+let rec double = function [] -> [] | gl :: rep -> gl :: gl :: double rep
 
 (*----------------------------------------------------------------------------*]
  Funkcija [insert x k list] na [k]-to mesto seznama [list] vrine element [x].
@@ -86,7 +94,9 @@ let rec double = ()
  - : int list = [1; 0; 0; 0; 0; 0]
 [*----------------------------------------------------------------------------*)
 
-let rec insert = ()
+let rec insert x k = function
+  | [] -> [ x ]
+  | gl :: rep -> if k <= 0 then x :: gl :: rep else gl :: insert x (k - 1) rep
 
 (*----------------------------------------------------------------------------*]
  Funkcija [divide k list] seznam razdeli na dva seznama. Prvi vsebuje prvih [k]
@@ -99,7 +109,13 @@ let rec insert = ()
  - : int list * int list = ([1; 2; 3; 4; 5], [])
 [*----------------------------------------------------------------------------*)
 
-let rec divide = ()
+let rec divide (k, list) =
+  match (k, list) with
+  | _, [] -> ([], [])
+  | k, list when k <= 0 -> (list, [])
+  | k, gl :: rep ->
+      let prvi, drugi = divide (k - 1, rep) in
+      (gl :: prvi, drugi)
 
 (*----------------------------------------------------------------------------*]
  Funkcija [rotate n list] seznam zavrti za [n] mest v levo. Predpostavimo, da
@@ -109,7 +125,9 @@ let rec divide = ()
  - : int list = [3; 4; 5; 1; 2]
 [*----------------------------------------------------------------------------*)
 
-let rotate = ()
+let rec rotate n list =
+  let list1, list2 = divide (n, list) in
+  list2 @ list1
 
 (*----------------------------------------------------------------------------*]
  Funkcija [remove x list] iz seznama izbriše vse pojavitve elementa [x].
@@ -118,7 +136,9 @@ let rotate = ()
  - : int list = [2; 3; 2; 3]
 [*----------------------------------------------------------------------------*)
 
-let rec remove = ()
+let rec remove x = function
+  | [] -> []
+  | gl :: rep -> if gl = x then remove x rep else gl :: remove x rep
 
 (*----------------------------------------------------------------------------*]
  Funkcija [is_palindrome] za dani seznam ugotovi ali predstavlja palindrom.
@@ -130,7 +150,9 @@ let rec remove = ()
  - : bool = false
 [*----------------------------------------------------------------------------*)
 
-let is_palindrome = ()
+let is_palindrome list =
+  let rec reverse = function [] -> [] | gl :: rep -> reverse rep @ [ gl ] in
+  list = reverse list
 
 (*----------------------------------------------------------------------------*]
  Funkcija [max_on_components] sprejme dva seznama in vrne nov seznam, katerega
@@ -141,7 +163,10 @@ let is_palindrome = ()
  - : int list = [5; 4; 3; 3; 4]
 [*----------------------------------------------------------------------------*)
 
-let rec max_on_components = ()
+let rec max_on_components s1 s2 =
+  match (s1, s2) with
+  | g1 :: r1, g2 :: r2 -> max g1 g2 :: max_on_components r1 r2
+  | _ -> []
 
 (*----------------------------------------------------------------------------*]
  Funkcija [second_largest] vrne drugo največjo vrednost v seznamu. Pri tem se
@@ -153,4 +178,10 @@ let rec max_on_components = ()
  - : int = 10
 [*----------------------------------------------------------------------------*)
 
-let second_largest = ()
+let second_largest list =
+  let rec najvecja = function
+    | [] -> failwith "List is too short!"
+    | [ x ] -> x
+    | gl :: rep -> max gl (najvecja rep)
+  in
+  najvecja (remove (najvecja list) list)
