@@ -48,12 +48,39 @@ let primer =
   spremenljivk v izrazu.
 [*----------------------------------------------------------------------------*)
 
+let prestej izraz =
+  let rec pomozna acc spremenljivke = function
+    | Konstanta _ -> (acc, spremenljivke)
+    | Spremenljivka x ->
+        if List.mem x spremenljivke then (acc, spremenljivke)
+        else (acc + 1, x :: spremenljivke)
+    | Operacija (levi, operator, desni) ->
+        let levi_acc, leve_spr = pomozna 0 spremenljivke levi in
+        let desni_acc, desne_spr = pomozna levi_acc leve_spr desni in
+        (acc + desni_acc, spremenljivke @ desne_spr)
+  in
+  fst (pomozna 0 [] izraz)
+
 (* b *)
 (*----------------------------------------------------------------------------*]
 Napišite funkcijo `izlusci : 'a izraz -> (string * int) slovar`, ki sprejme izraz 
 in vrne slovar, ki pove, kolikokrat se posamezna spremenljivka pojavi v izrazu. 
 Vrstni red v slovarju ni pomemben.
 [*----------------------------------------------------------------------------*)
+
+let izlusci izraz =
+  let rec pomozna acc = function
+    | Konstanta _ -> acc
+    | Spremenljivka x -> (
+        match najdi x acc with
+        | None -> dodaj (x, 1) acc
+        | Some vrednost -> dodaj (x, vrednost + 1) acc )
+    | Operacija (l, o, d) ->
+        let levi_slovar = pomozna acc l in
+        let desni_slovar = pomozna levi_slovar d in
+        desni_slovar
+  in
+  pomozna prazen_slovar izraz
 
 (* c *)
 (*----------------------------------------------------------------------------*]
@@ -64,6 +91,30 @@ Vrstni red v slovarju ni pomemben.
     # izracunaj [("x",3); ("y", 4); ("z",5)] primer;;
     - : int option = Some (-4)
 [*----------------------------------------------------------------------------*)
+
+let izracun operacija x y =
+  match operacija with
+  | Plus -> Some (x + y)
+  | Krat -> Some (x * y)
+  | Minus -> Some (x - y)
+  | Deljeno -> if y = 0 then None else Some (x / y)
+
+let izracunaj slovar_vrednosti izraz =
+  let rec pomozna acc = function
+    | Konstanta a -> Some (a + acc)
+    | Spremenljivka x -> (
+        match najdi x slovar_vrednosti with
+        | None -> None
+        | Some y -> Some (acc + y) )
+    | Operacija (l, o, d) -> (
+        match pomozna 0 l with
+        | None -> None
+        | Some levi -> (
+            match pomozna 0 d with
+            | None -> None
+            | Some desni -> izracun o levi desni ) )
+  in
+  pomozna 0 izraz
 
 (* c *)
 (*----------------------------------------------------------------------------*]
