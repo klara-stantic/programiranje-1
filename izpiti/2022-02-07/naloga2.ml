@@ -12,15 +12,16 @@ let krat = Operator ( * )
 
 let deljeno = Operator ( / )
 
-let primer : int term = [ Value 3; Value 4; plus; Value 5; deljeno ]    
+let primer : int term = [ Value 3; Value 4; plus; Value 5; deljeno ]
 
 (* 2. a) *)
 
-let primer1 : int term = []
+let primer1 : int term =
+  [ Value 1; Value 2; plus; Value 4; krat; Value (-1); plus; Value 5; krat ]
 
 let primer2 : float term = []
 
-let napacni_primer = []
+let napacni_primer = [ Value 1; plus; Value 2; Value 3; Value 4 ]
 
 (* 2. b) *)
 
