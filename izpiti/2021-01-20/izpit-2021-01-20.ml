@@ -95,8 +95,9 @@ let oceni cenilka kuhinja =
   |> List.map (pretvori cenilka)
   |> List.map pomnozi_ceno |> List.fold_left ( + ) 0
 
-(*Kuhinja je seznam kuhinjskih elementov. 
+(*Popravki:
+  Kuhinja je seznam kuhinjskih elementov. 
   Vsebino elementov želimo zamenjati z vrednostjo cenilke zanje - dobimo kuhinjo int kuhinjskih elementov.
-  pretvori cenilka deluje na posameznem elementu, mi pa imamo seznam - List.map bo vzela to funkcijo in jo izvedla na vseh elementih seznama. 
+  "pretvori cenilka" deluje na posameznem elementu, mi pa imamo seznam - List.map bo vzela to funkcijo in jo izvedla na vseh elementih seznama. 
   Funkcija oceni ni rekurzivna.
   *)
