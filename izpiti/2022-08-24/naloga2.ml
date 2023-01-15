@@ -56,7 +56,7 @@ let rec izvedi_ukaze tape = function
 
 let naberi_in_pretvori tape list =
   let rec generator_parov acc current_tape cmd_list =
-    let glava = current_tape.head in
+    let (Tape { left; head; right }) = current_tape in
     match cmd_list with
     | [] -> obrni acc
     | prvi :: ostali -> (
@@ -64,10 +64,7 @@ let naberi_in_pretvori tape list =
         | None -> obrni acc
         | Some x -> (
             match prvi with
-            | Do f ->
-                generator_parov
-                  ((current_tape.head, f current_tape.head) :: acc)
-                  x ostali
+            | Do f -> generator_parov ((head, f head) :: acc) x ostali
             | _ -> generator_parov acc x ostali ) )
   in
   let pari = generator_parov [] tape list
@@ -77,7 +74,8 @@ let naberi_in_pretvori tape list =
 (* 2. e) *)
 
 let pripravi_ukaze tape f =
-  let desni = List.length tape.right in
+  let (Tape { left; head; right }) = tape in
+  let desni = List.length right in
   let rec premikanje_glave_levo acc current_tape =
     (*Glavo premikamo v levo, dokler ni glava skrajni levi element.
       hkrati shranjujemo zaporedne ukaze Left. *)
